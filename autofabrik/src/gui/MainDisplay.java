@@ -107,7 +107,7 @@ public class MainDisplay {
 			@Override
 			public void handleEvent(final Event e) {
 
-				display.syncExec(new Runnable() {
+				display.asyncExec(new Runnable() {
 					public void run() {
 						System.out.println("Event.detail: " + e.detail);
 						switch (e.detail) {
@@ -188,7 +188,7 @@ public class MainDisplay {
 
 	public void create() {
 		shell.setText("ToyCarFactory");
-		shell.setImage(new Image(display, "pic/car.jpg"));
+		//shell.setImage(new Image(display, "pic/car.jpg"));
 		shell.setLayout(new FillLayout());
 		MessageBoxCreator.closeToyCarFactory(shell);
 		createContent();
