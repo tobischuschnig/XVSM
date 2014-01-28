@@ -1,11 +1,11 @@
-package fabrik.rmi.roboter;
+package fabrik.xvsm.roboter;
 
 import autoKonfiguration.Auto;
 
 
 /**
  * @author Michael Borko
- * @see fabrik.rmi.roboter.PruefRoboter
+ * @see fabrik.xvsm.roboter.PruefRoboter
  */
 public class PruefRoboterTeile extends PruefRoboter {
 

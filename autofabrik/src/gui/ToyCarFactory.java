@@ -41,7 +41,7 @@ public class ToyCarFactory {
 	 */
 	public static void main(String args[]) {
 		ToyCarFactory application = new ToyCarFactory();
-		factory = fabrik.rmi.Fabrik.getInstance();
+		factory = fabrik.xvsm.Fabrik.getInstance();
 		application.launchGUI();
 	}
 

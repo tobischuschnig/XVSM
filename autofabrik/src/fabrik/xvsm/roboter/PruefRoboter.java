@@ -1,13 +1,13 @@
-package fabrik.rmi.roboter;
+package fabrik.xvsm.roboter;
 
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
-import fabrik.rmi.Config;
-import fabrik.rmi.ICallFactory;
-
+import fabrik.xvsm.Config;
+import fabrik.xvsm.Fabrik;
+import fabrik.xvsm.ICallFactory;
 import autoKonfiguration.Auto;
 
 /**
@@ -29,16 +29,16 @@ import autoKonfiguration.Auto;
 public abstract class PruefRoboter extends Thread {
 
 	protected long id;
-	private ICallFactory callFactory = null;
+	private static ICallFactory callFactory = null;
 
-	public void connect() throws RemoteException, NotBoundException {
-
-		Registry registry = LocateRegistry.getRegistry(Config.registryPort);
-		callFactory = (ICallFactory) registry
-				.lookup(Config.unicastRemoteObjectName);
-		id = callFactory.getID();
-		System.err.println("Got id: " + id);
-	}
+//	public void connect() throws RemoteException, NotBoundException {
+//
+//		Registry registry = LocateRegistry.getRegistry(Config.registryPort);
+//		callFactory = (ICallFactory) registry
+//				.lookup(Config.unicastRemoteObjectName);
+//		id = callFactory.getID();
+//		System.err.println("Got id: " + id);
+//	}
 
 	public PruefRoboter() {
 		System.out.println();
@@ -78,11 +78,11 @@ public abstract class PruefRoboter extends Thread {
 
 	public static void main(String[] args) throws Exception {
 		PruefRoboter prfRoboter1 = new PruefRoboterGewicht();
-		prfRoboter1.connect();
+		callFactory = Fabrik.getInstance();
 		prfRoboter1.start();
 
 		PruefRoboter prfRoboter2 = new PruefRoboterTeile();
-		prfRoboter2.connect();
+		callFactory = Fabrik.getInstance();
 		prfRoboter2.start();
 	}
 }

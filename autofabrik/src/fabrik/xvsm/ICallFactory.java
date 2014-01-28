@@ -1,4 +1,4 @@
-package fabrik.rmi;
+package fabrik.xvsm;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;

@@ -1,4 +1,4 @@
-package fabrik.rmi;
+package fabrik.xvsm;
 
 /**
  * Konfigurationspool der RMI ToyCarFactory-Implementierung.
@@ -14,5 +14,5 @@ public class Config {
 	/**
 	 * Default-Port der intern erstellten Registry. Wert ist auf 12345 gesetzt.
 	 */
-	public static final int registryPort = 12345;
+	public static final int registryPort = 12346;
 }

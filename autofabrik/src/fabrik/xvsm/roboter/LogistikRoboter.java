@@ -1,13 +1,13 @@
-package fabrik.rmi.roboter;
+package fabrik.xvsm.roboter;
 
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
-import fabrik.rmi.Config;
-import fabrik.rmi.ICallFactory;
-
+import fabrik.xvsm.Config;
+import fabrik.xvsm.Fabrik;
+import fabrik.xvsm.ICallFactory;
 import autoKonfiguration.Auto;
 
 /**
@@ -22,16 +22,16 @@ import autoKonfiguration.Auto;
 public class LogistikRoboter extends Thread {
 
 	private long id;
-	private ICallFactory callFactory = null;
+	private static ICallFactory callFactory = null;
 
-	public void connect() throws RemoteException, NotBoundException {
-
-		Registry registry = LocateRegistry.getRegistry(Config.registryPort);
-		callFactory = (ICallFactory) registry
-				.lookup(Config.unicastRemoteObjectName);
-		id = callFactory.getID();
-		System.err.println("Got id: " + id);
-	}
+//	public void connect() throws RemoteException, NotBoundException {
+//
+//		Registry registry = LocateRegistry.getRegistry(Config.registryPort);
+//		callFactory = (ICallFactory) registry
+//				.lookup(Config.unicastRemoteObjectName);
+//		id = callFactory.getID();
+//		System.err.println("Got id: " + id);
+//	}
 
 	public LogistikRoboter() {
 		System.out.println();
@@ -90,7 +90,7 @@ public class LogistikRoboter extends Thread {
 	public static void main(String[] args) {
 		try {
 			LogistikRoboter lieferant = new LogistikRoboter();
-			lieferant.connect();
+			callFactory = Fabrik.getInstance();
 			lieferant.start();
 		} catch (Exception e) {
 			System.err.println("Registry not online!");

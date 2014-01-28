@@ -1,4 +1,4 @@
-package fabrik.rmi.roboter;
+package fabrik.xvsm.roboter;
 
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -6,15 +6,15 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
 import autoKonfiguration.Auto;
-
 import einzelteile.Achse;
-import einzelteile.Karosserie;
-import einzelteile.ReifenPaar;
 import einzelteile.Bodenplatte;
-import einzelteile.Sitz;
+import einzelteile.Karosserie;
 import einzelteile.Lenkrad;
-import fabrik.rmi.Config;
-import fabrik.rmi.ICallFactory;
+import einzelteile.ReifenPaar;
+import einzelteile.Sitz;
+import fabrik.xvsm.Config;
+import fabrik.xvsm.Fabrik;
+import fabrik.xvsm.ICallFactory;
 
 /**
  * Montageroboter bauen die Autos zusammen, sobald alle Teile verf\u00FCgbar
@@ -31,16 +31,16 @@ import fabrik.rmi.ICallFactory;
 public class MontageRoboter extends Thread {
 
 	private long id;
-	private ICallFactory callFactory = null;
+	private static ICallFactory callFactory = null;
 
-	public void connect() throws RemoteException, NotBoundException {
-
-		Registry registry = LocateRegistry.getRegistry(Config.registryPort);
-		callFactory = (ICallFactory) registry
-				.lookup(Config.unicastRemoteObjectName);
-		id = callFactory.getID();
-		System.err.println("Got id: " + id);
-	}
+//	public void connect() throws RemoteException, NotBoundException {
+//
+//		Registry registry = LocateRegistry.getRegistry(Config.registryPort);
+//		callFactory = (ICallFactory) registry
+//				.lookup(Config.unicastRemoteObjectName);
+//		id = callFactory.getID();
+//		System.err.println("Got id: " + id);
+//	}
 
 	public MontageRoboter() {
 		System.out.println();
@@ -154,7 +154,7 @@ public class MontageRoboter extends Thread {
 	public static void main(String[] args) {
 		try {
 			MontageRoboter monteur = new MontageRoboter();
-			monteur.connect();
+			callFactory = Fabrik.getInstance();
 			monteur.start();
 		} catch (Exception e) {
 			System.err.println("Registry not online!");

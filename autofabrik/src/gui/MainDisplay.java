@@ -267,7 +267,7 @@ public class MainDisplay {
 				| SWT.READ_ONLY);
 		String[] items = getClasses("einzelteile");
 		comboComponents.setItems(items);
-		comboComponents.setText(items[0]);
+//		comboComponents.setText(items[0]);
 		comboComponents.setLayoutData(gridData);
 
 		// input for quantity
@@ -445,31 +445,39 @@ public class MainDisplay {
 	 */
 	@SuppressWarnings("rawtypes")
 	private static String[] getClasses(String packageName) {
-		try {
-			ClassLoader classLoader = Thread.currentThread()
-					.getContextClassLoader();
-			assert classLoader != null;
-			String path = packageName.replace('.', '/');
-			Enumeration<URL> resources = classLoader.getResources(path);
-			List<File> dirs = new ArrayList<File>();
-			while (resources.hasMoreElements()) {
-				URL resource = resources.nextElement();
-				dirs.add(new File(resource.getFile()));
-			}
-			ArrayList<Class> classes = new ArrayList<Class>();
-			for (File directory : dirs) {
-				classes.addAll(findClasses(directory, packageName));
-			}
-			ArrayList<String> ret = new ArrayList<String>();
-			for (Class className : classes) {
-				if (!(className.getName().equals("einzelteile.Einzelteil") || className
-						.getName().equals("einzelteile.Auto")))
-					ret.add(className.getName());
-			}
-			return ret.toArray(new String[ret.size()]);
-		} catch (Exception ex) {
-			return null;
-		}
+//		try {
+//			ClassLoader classLoader = Thread.currentThread()
+//					.getContextClassLoader();
+//			assert classLoader != null;
+//			String path = packageName.replace('.', '/');
+//			Enumeration<URL> resources = classLoader.getResources(path);
+//			List<File> dirs = new ArrayList<File>();
+//			while (resources.hasMoreElements()) {
+//				URL resource = resources.nextElement();
+//				dirs.add(new File(resource.getFile()));
+//			}
+//			ArrayList<Class> classes = new ArrayList<Class>();
+//			for (File directory : dirs) {
+//				classes.addAll(findClasses(directory, packageName));
+//			}
+//			ArrayList<String> ret = new ArrayList<String>();
+//			for (Class className : classes) {
+//				if (!(className.getName().equals("einzelteile.Einzelteil") || className
+//						.getName().equals("einzelteile.Auto")))
+//					ret.add(className.getName());
+//			}
+//			return ret.toArray(new String[ret.size()]);
+//		} catch (Exception ex) {
+//			return null;
+//		}
+		String[] wert = new String[6];
+		wert[0] = "einzelteile.Achse";
+		wert[1] = "einzelteile.Bodenplatte";
+		wert[2] = "einzelteile.Karosserie";
+		wert[3] = "einzelteile.Lenkrad";
+		wert[4] = "einzelteile.ReifenPaar";
+		wert[5] = "einzelteile.Sitz";
+		return wert;
 
 	}
 
