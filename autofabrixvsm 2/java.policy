@@ -1,0 +1,9 @@
+
+grant {
+	permission java.util.PropertyPermission "mozartspaces.configurationFile", "read";
+	permission java.io.FilePermission "mozartspaces.xml", "read";
+ 	permission java.util.PropertyPermission "user.home", "read";
+ 	permission java.io.FilePermission "C:/Users/<username>/mozartspaces.xml", "read";
+	permission java.lang.RuntimePermission "modifyThread";
+
+};
