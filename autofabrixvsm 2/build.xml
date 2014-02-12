@@ -1,53 +1,109 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="autofabrik" default="compile" basedir=".">
 
-	<property name="src.dir" value="src" />
-	<property name="build.dir" value="bin" />
-	<property name="lib.dir" value="lib" />
-	<property name="id" value="default" />
-	<property name="delay" value="500" />
+    <property name="src.dir" value="src" />
+    <property name="build.dir" value="bin" />
+    <property name="lib.dir" value="lib" />
+    <property name="doc.dir" value="doc" />
+    <property name="id" value="default" />
+    <property name="delay" value="500" />
+	
+	
+    <condition property="isWindows64">
+        <and>
+            <os family="windows" />
+            <or>
+                <os arch="x64" />
+                <os arch="amd64" />
+            </or>
+        </and>	
+    </condition>
+    <condition property="isWindows32">
+        <and>
+            <os family="windows" />
+            <os arch="x32" />
+        </and>	
+    </condition>
+		
+    <condition property="isMac32">
+        <and>
+            <os family="mac" />
+            <os arch="x32" />
+        </and>	
+    </condition>
+    <condition property="isMac64">
+        <and>
+            <os family="mac" />
+            <or>
+                <os arch="x64" />
+                <os arch="amd64" />
+            </or>
+        </and>	
+    </condition>
+    <condition property="isLinux">
+        <and>
+            <os family="unix" />
+        </and>	
+    </condition>
+	
+    <path id="project.classpath">
+        <pathelement location="${build.dir}" />
+        <fileset dir="${lib.dir}" >
+            <include name="mozartspaces-dist-2.2-SNAPSHOT-r12931-all-with-dependencies.jar"/>
+            <include name="swt_win64.jar" if="isWindows64"/>
+            <include name="swt_win32.jar" if="isWindows32"/>
+            <include name="swt_macosx64.jar" if="isMac64"/>
+            <include name="swt_macosx32.jar" if="isMac32"/>
+            <include name="swt_linux64.jar" if="isLinux"/>
+        </fileset>
+    </path>
 
-	<path id="project.classpath">
-		<pathelement location="${build.dir}" />
-		<pathelement location="lib/swt_macosx64.jar" />
-	</path>
+    <target name="compile" description="Compile project.">
+        <echo message="Hello ${os.name}, ${os.arch}, ${sun.arch.data.model}" />
+        <mkdir dir="${build.dir}" />
+        <javac srcdir="${src.dir}" destdir="${build.dir}" classpathref="project.classpath" debug="true" deprecation="true" includeantruntime="false" />
+    </target>
 
-	<target name="compile" description="Compile project.">
-		<mkdir dir="${build.dir}" />
-		<javac srcdir="${src.dir}" destdir="${build.dir}" classpathref="project.classpath" debug="true" deprecation="true" includeantruntime="false" />
-	</target>
+    <target name="run-gui" depends="compile" description="Run server.">
+        <java classname="gui.CarFactory" fork="true" classpathref="project.classpath">
+            <sysproperty value="java.policy" key="java.security.policy"></sysproperty>
+        </java>
+    </target>
 
-	<target name="run-gui" depends="compile" description="Run server.">
-		<java classname="gui.ToyCarFactory" fork="true" classpathref="project.classpath">
-			<sysproperty value="java.policy" key="java.security.policy"></sysproperty>
-		</java>
-	</target>
+    <target name="run-assembly" depends="compile" description="Run assembly.">
+        <java classname="fabrik.xvsm.roboter.MontageRoboter" fork="true" classpathref="project.classpath">
+            <arg value="${id}" />
+            <arg value="${delay}" />
+        </java>
+    </target>
 
-	<target name="run-assembly" depends="compile" description="Run assembly.">
-		<java classname="fabrik.rmi.roboter.MontageRoboter" fork="true" classpathref="project.classpath">
-			<arg value="${id}" />
-			<arg value="${delay}" />
-		</java>
-	</target>
+    <target name="run-audit" depends="compile" description="Run audit.">
+        <java classname="fabrik.xvsm.roboter.PruefRoboter" fork="true" classpathref="project.classpath">
+            <arg value="${id}" />
+            <arg value="${delay}" />
+        </java>
+    </target>
 
-	<target name="run-audit" depends="compile" description="Run audit.">
-		<java classname="fabrik.rmi.roboter.PruefRoboter" fork="true" classpathref="project.classpath">
-			<arg value="${id}" />
-			<arg value="${delay}" />
-		</java>
-	</target>
+    <target name="run-logistic" depends="compile" description="Run assembly.">
+        <java classname="fabrik.xvsm.roboter.LogistikRoboter" fork="true" classpathref="project.classpath">
+            <arg value="${id}" />
+            <arg value="${delay}" />
+        </java>
+    </target>
 
-	<target name="run-logistic" depends="compile" description="Run assembly.">
-		<java classname="fabrik.rmi.roboter.LogistikRoboter" fork="true" classpathref="project.classpath">
-			<arg value="${id}" />
-			<arg value="${delay}" />
-		</java>
-	</target>
+    <target name="clean" description="Clean build products.">
+        <delete dir="${build.dir}" />
+    </target>
 
-	<target name="clean" description="Clean build products.">
-		<delete dir="${build.dir}" />
-	</target>
-
-	<target name="rebuild" depends="clean, compile" description="Clean and build products." />
+    <target name="rebuild" depends="clean, compile" description="Clean and build products." />
+	
+    <target name="create-doc">
+        <mkdir dir="${doc.dir}" />
+        <javadoc sourcepath="src" destdir="${doc.dir}" classpathref="project.classpath"/>
+    </target>
+	
+    <target name="clean-doc">
+        <delete dir="${doc.dir}" />
+    </target>
 
 </project>

@@ -6,9 +6,22 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
 import fabrik.xvsm.Config;
-import fabrik.xvsm.Fabrik;
-import fabrik.xvsm.ICallFactory;
+
 import autoKonfiguration.Auto;
+import fabrik.ID;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.mozartspaces.capi3.AnyCoordinator;
+import org.mozartspaces.capi3.AnyCoordinator.AnySelector;
+import org.mozartspaces.core.Capi;
+import org.mozartspaces.core.ContainerReference;
+import org.mozartspaces.core.DefaultMzsCore;
+import org.mozartspaces.core.Entry;
+import org.mozartspaces.core.MzsCore;
+import org.mozartspaces.core.MzsCoreException;
+import org.mozartspaces.core.MzsTimeoutException;
 
 /**
  * Die Pr\u00FCfroboter \u00FCberpr\u00FCfen die fertigen Autos. Jeder
@@ -22,67 +35,73 @@ import autoKonfiguration.Auto;
  * abh\u00E4ngig davon, welcher Roboter nichts zu tun hat, allerdings nie
  * gleichzeitig an einem Auto. Welche Messung ein Roboter durchf\u00FChren kann,
  * wird beim Start angegeben.
- * 
+ *
  * @author Michael Borko
- * 
+ *
  */
 public abstract class PruefRoboter extends Thread {
 
-	protected long id;
-	private static ICallFactory callFactory = null;
+    public long id;
+    private Capi capi;
+//    private ICallFactory callFactory = null;
 
-//	public void connect() throws RemoteException, NotBoundException {
-//
-//		Registry registry = LocateRegistry.getRegistry(Config.registryPort);
-//		callFactory = (ICallFactory) registry
-//				.lookup(Config.unicastRemoteObjectName);
-//		id = callFactory.getID();
-//		System.err.println("Got id: " + id);
-//	}
+    public void connect() {
+        try {
+            MzsCore core = DefaultMzsCore.newInstanceWithoutSpace();
+            this.capi = new Capi(core);
+            ContainerReference idContainer = capi.lookupContainer("ID", new URI("xvsm://localhost:9876"), Long.MAX_VALUE, null);
+            id = ((ID) ((Entry) capi.read(idContainer).get(0)).getValue()).id;
+            System.err.println("Got id: " + id);
+        } catch (MzsCoreException | URISyntaxException ex) {
+            Logger.getLogger(PruefRoboter.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
 
-	public PruefRoboter() {
-		System.out.println();
-		System.out.println("Pruefroboter meldet sich zum Dienst");
-		System.out.println();
-	}
+    public PruefRoboter() {
+        System.out.println();
+        System.out.println("Pruefroboter meldet sich zum Dienst");
+        System.out.println();
+    }
 
-	public void run() {
-		// TODO NICE :: Callbackimplementierung soll Polling ersetzen
-		while (true) {
-			// Warte 1-3 Sekunden
-			try {
-				Thread.sleep((long) (Math.random() * 1000 * 2) + 1000);
-			} catch (InterruptedException e1) {
-			}
+    public void run() {
+        try {
+            ContainerReference autos = capi.lookupContainer("Autos", new URI("xvsm://localhost:9876"), Long.MAX_VALUE, null);
+            ContainerReference getesteteAutos = capi.lookupContainer("GetesteteAutos", new URI("xvsm://localhost:9876"), Long.MAX_VALUE, null);
 
-			try {
-				Auto auto = callFactory.testen();
-				if (!auto.isDefekt())
-					auto.setDefekt(!isAutoOK(auto));
+            while (true) {
+                // Warte 1-3 Sekunden
+                try {
+                    Thread.sleep((long) (Math.random() * 1000 * 2) + 1000);
+                } catch (InterruptedException e1) {
+                }
 
-				System.out.println("Auto geprueft: " + auto.isDefekt());
+                try {
+                    AnySelector as = AnyCoordinator.newSelector(1);
+                    capi.test(autos, as, Long.MAX_VALUE, null);
+                    Auto auto = (Auto) capi.take(autos, as, Long.MAX_VALUE, null).get(0);
+                    if (!auto.isDefekt()) {
+                        auto.setDefekt(!isAutoOK(auto));
+                    }
+                    System.out.println("Auto geprueft: " + !auto.isDefekt());
+                    capi.write(new Entry(auto), getesteteAutos);
+                } catch (MzsTimeoutException ex) {
+                    System.out.println("Kein Auto zum Prüfen");
+                }
+            }
+        } catch (Exception ex) {
+            System.exit(1);
+        }
+    }
 
-				callFactory.getestet(auto);
+    public abstract boolean isAutoOK(Auto auto);
 
-			} catch (RemoteException re) {
-				if (re.getMessage().contains("Connection refused")) {
-					System.err.println("Registry said goodbye ...");
-					System.exit(1);
-				}
-				// else System.err.println("Keine Autos !!!");
-			}
-		}
-	}
+    public static void main(String[] args) throws Exception {
+        PruefRoboter prfRoboter1 = new PruefRoboterGewicht();
+        prfRoboter1.connect();
+        prfRoboter1.start();
 
-	public abstract boolean isAutoOK(Auto auto);
-
-	public static void main(String[] args) throws Exception {
-		PruefRoboter prfRoboter1 = new PruefRoboterGewicht();
-		callFactory = Fabrik.getInstance();
-		prfRoboter1.start();
-
-		PruefRoboter prfRoboter2 = new PruefRoboterTeile();
-		callFactory = Fabrik.getInstance();
-		prfRoboter2.start();
-	}
+        PruefRoboter prfRoboter2 = new PruefRoboterTeile();
+        prfRoboter2.connect();
+        prfRoboter2.start();
+    }
 }
