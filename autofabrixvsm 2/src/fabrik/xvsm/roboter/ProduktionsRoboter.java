@@ -17,6 +17,7 @@ import java.util.logging.Logger;
 import org.mozartspaces.core.Capi;
 import org.mozartspaces.core.ContainerReference;
 import org.mozartspaces.core.Entry;
+import org.mozartspaces.core.TransactionReference;
 import org.mozartspaces.core.MzsConstants.RequestTimeout;
 import org.mozartspaces.core.MzsCoreException;
 
@@ -124,12 +125,16 @@ public class ProduktionsRoboter extends Thread {
                 } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
                     System.err.println("Houston, we have a problem ...");
                 }
-
+				
+				TransactionReference tx = null;
 				try {
-					capi.write(container, new Entry(teil));
+					tx = capi.createTransaction( 100000, new URI("xvsm://localhost:9876"));
+					capi.write(new Entry(teil), container,RequestTimeout.DEFAULT,tx);
+					capi.commitTransaction(tx);
 					System.out.println("Created new " + type.getName());
 				} catch (Exception e) {
 					System.err.println("Problem writing in the Space!");
+					capi.rollbackTransaction(tx);
 					e.printStackTrace();
 					System.exit(1);
 				}
