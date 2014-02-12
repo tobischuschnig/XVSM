@@ -9,7 +9,7 @@ import org.mozartspaces.core.aspects.AspectResult;
 import org.mozartspaces.core.requests.WriteEntriesRequest;
 
 /**
- *
+ * Der Aspekt zum informieren wenn Autos geliefert wruden oder schlechte erkannt wurden
  * @author Tobias Schuschnig
  */
 public class NotifyCarsAspect extends AbstractContainerAspect {

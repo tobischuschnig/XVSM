@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package fabrik;
 
 import java.io.Serializable;
@@ -18,20 +14,12 @@ import org.mozartspaces.notifications.NotificationListener;
 import org.mozartspaces.notifications.Operation;
 
 /**
- *
+ * Aspekt informiert die GUI wenn neue Teile vorhanden sind.
  * @author Tobias Schuschnig
  */
 public class NotifyComponentsListener implements NotificationListener {
 
-	
-	//TODO Funktioniert nicht bearbeiten
-    /*@Override
-    public AspectResult preWrite(WriteEntriesRequest request, Transaction tx, SubTransaction stx, Capi3AspectPort capi3, int executionCount) {
-        Event e = new Event();
-        e.detail = 1;
-        gui.MainDisplay.listener.handleEvent(e);
-        return AspectResult.OK;
-    }*/
+
 
     @Override
     public void entryOperationFinished(Notification ntfctn, Operation oprtn, List<? extends Serializable> list) {
