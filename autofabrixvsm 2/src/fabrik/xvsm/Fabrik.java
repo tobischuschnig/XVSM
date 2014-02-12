@@ -355,11 +355,18 @@ public class Fabrik implements IFactory, ICallFactory {
 		// TODO NICE :: PruefRoboter ueber neu-produziertes Auto informieren
 		
 		try {
-			capi.write(new Entry(t), autoC);
+			synchronized(autoC) {
+				autoC = capi.lookupContainer("Autos", new URI("xvsm://localhost:9876"), RequestTimeout.DEFAULT, null);
+				capi.write(new Entry(t), autoC);
+			}
 			
 		} catch (MzsCoreException e) {
 			// TODO Auto-generated catch block
 			System.err.println("There occured a Problem with the space!");
+			e.printStackTrace();
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			System.err.println("There occured a Problem with the space.");
 			e.printStackTrace();
 		}
 		

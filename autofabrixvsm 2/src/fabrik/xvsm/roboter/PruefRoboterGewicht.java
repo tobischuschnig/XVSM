@@ -4,7 +4,7 @@ import autoKonfiguration.Auto;
 
 /**
  * @author Michael Borko
- * @see fabrik.rmi.roboter.PruefRoboter
+ * @see fabrik.xvsm.roboter.PruefRoboter
  */
 public class PruefRoboterGewicht extends PruefRoboter {
 

@@ -11,7 +11,12 @@ import org.mozartspaces.core.aspects.AspectResult;
 import org.mozartspaces.core.requests.ReadEntriesRequest;
 
 /**
- * 
+ * Aspekte sind eine Ergaenzung eines Containers die gewisse Hintergrundaktivitaeten bewaeltigen. 
+ * Diese werden entweder beim lesen oder schreiben in einen Container ausgeloest und koennen vor 
+ * oder nach der Aktion ausgefuehrt werden.
+ * In diesem Beispiel verwenden wir die Aspekte um die ID‘s global eindeutig zu gestalten 
+ * und im Space zu schreiben. Nachdem eine ID verwendet wurde schaltet sich der Aspekt ein 
+ * um die ID zu erhoehen.
  * @author Tobias Schuschnig
  */
 public class IDAspect extends AbstractContainerAspect {

@@ -1,108 +1,100 @@
 package fabrik.xvsm.roboter;
 
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+
+import fabrik.xvsm.Config;
+import fabrik.xvsm.Fabrik;
+import fabrik.xvsm.ICallFactory;
 import autoKonfiguration.Auto;
-import fabrik.ID;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.mozartspaces.capi3.AnyCoordinator;
-import org.mozartspaces.capi3.AnyCoordinator.AnySelector;
-import org.mozartspaces.core.Capi;
-import org.mozartspaces.core.ContainerReference;
-import org.mozartspaces.core.DefaultMzsCore;
-import org.mozartspaces.core.Entry;
-import org.mozartspaces.core.MzsCore;
-import org.mozartspaces.core.MzsCoreException;
-import org.mozartspaces.core.MzsTimeoutException;
 
 /**
- * In der Logistik werden die fertigen Autos von Logistikroboter ausgeliefert (=
- * als fertig markiert), nachdem sie alle Tests bestanden haben. Defekte Autos
- * werden nicht transportiert, sondern enden an einer Sammelstelle.
- *
+ * In der Logistik werden die fertigen Spielzeugautos von Logistikroboter
+ * ausgeliefert (= als fertig markiert), nachdem sie alle Tests bestanden haben.
+ * Defekte Autos werden nicht transportiert, sondern enden an einer
+ * Sammelstelle.
+ * 
  * @author Michael Borko
- *
+ * 
  */
 public class LogistikRoboter extends Thread {
 
-    private long id;
-    private Capi capi;
+	private long id;
+	private static ICallFactory callFactory = null;
 
-    public void connect() {
-        try {
-            MzsCore core = DefaultMzsCore.newInstanceWithoutSpace();
-            this.capi = new Capi(core);
-            ContainerReference idContainer = capi.lookupContainer("ID", new URI("xvsm://localhost:9876"), Long.MAX_VALUE, null);
-            id = ((ID) ((Entry) capi.read(idContainer).get(0)).getValue()).id;
-            System.err.println("Got id: " + id);
-        } catch (URISyntaxException | MzsCoreException ex) {
-            Logger.getLogger(LogistikRoboter.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
+//	public void connect() throws RemoteException, NotBoundException {
+//
+//		Registry registry = LocateRegistry.getRegistry(Config.registryPort);
+//		callFactory = (ICallFactory) registry
+//				.lookup(Config.unicastRemoteObjectName);
+//		id = callFactory.getID();
+//		System.err.println("Got id: " + id);
+//	}
 
-    public LogistikRoboter() {
-        System.out.println();
-        System.out.println("LogistikRoboter meldet sich zum Dienst");
-        System.out.println();
-    }
+	public LogistikRoboter() {
+		System.out.println();
+		System.out.println("LogistikRoboter meldet sich zum Dienst");
+		System.out.println();
+	}
 
-    @Override
-    public void run() {
-        try {
-            ContainerReference tested = capi.lookupContainer("GetesteteAutos", new URI("xvsm://localhost:9876"), Long.MAX_VALUE, null);
-            ContainerReference crashed = capi.lookupContainer("KaputteAutos", new URI("xvsm://localhost:9876"), Long.MAX_VALUE, null);
-            ContainerReference delivered = capi.lookupContainer("GelieferteAutos", new URI("xvsm://localhost:9876"), Long.MAX_VALUE, null);
-            ContainerReference cars = capi.lookupContainer("Autos", new URI("xvsm://localhost:9876"), Long.MAX_VALUE, null);
+	public void run() {
+		// TODO NICE :: Callbackimplementierung soll Polling ersetzen
+		while (true) {
+			// Warte 1-3 Sekunden
+			try {
+				Thread.sleep((long) (Math.random() * 1000 * 2) + 1000);
+				// Thread.sleep(500);
+			} catch (InterruptedException e1) {
+			}
 
+			try {
+				Auto auto = callFactory.transport();
 
-            while (true) {
-                try {
-                    // Warte 1-3 Sekunden
-                    try {
-                        Thread.currentThread().sleep((long) (Math.random() * 1000 * 2) + 1000);
-                        // Thread.sleep(500);
-                    } catch (InterruptedException e1) {
-                    }
-                    AnySelector ls = AnyCoordinator.newSelector(1);
-                    capi.test(tested, ls, Long.MAX_VALUE, null);
-                    Auto auto = (Auto) capi.take(tested, ls, Long.MAX_VALUE, null).get(0);
-                    if (auto.isDefekt()) {
-                        // Fertig geprueft
-                        auto.setLieferantID(id);
-                        capi.write(new Entry(auto), crashed);
-                        System.out.println("Auto " + auto.getAutoID() + " entsorgt");
-                    } else {
-                        // Ist es ueberhaupt geprueft?
-                        if ((auto.getPrueferDefekteID() != -1) && (auto.getPrueferGewichtID() != -1)) {
-                            // Fertig geprueft
-                            auto.setLieferantID(id);
-                            capi.write(new Entry(auto), delivered);
-                            System.out.println("Auto " + auto.getAutoID()
-                                    + " ausgeliefert");
-                        } else {
-                            capi.write(cars, new Entry(auto));
-                            System.out.println("Auto nicht vollständig geprueft");
-                        }
-                    }
-                } catch (MzsTimeoutException ex) {
-                    System.out.println("Kein Auto verfuegbar");
-                }
-            }
-        } catch (Exception ex) {
-            System.err.println("Container said goodbye ..." + ex.getMessage());
-            System.exit(1);
-        }
-    }
+				// TODO MUST :: Implementierung der Logistik-Funktionalität
+				// <REMOVE>
+				if (auto.isDefekt()) {
+					// Ab in die Sammelstelle!
+					auto.setLieferantID(id);
+					callFactory.verwerfen(auto);
+					System.out
+							.println("Auto " + auto.getAutoID() + " entsorgt");
+				} else {
+					// Ist es ueberhaupt geprueft?
+					if ((auto.getPrueferDefekteID() != -1)
+							&& (auto.getPrueferGewichtID() != -1)) {
+						// Fertig geprueft
+						auto.setLieferantID(id);
+						callFactory.liefern(auto);
+						System.out.println("Auto " + auto.getAutoID()
+								+ " ausgeliefert");
+					} else {
+						callFactory.zusammengebaut(auto);
+					}
+				}
+				// </REMOVE>
 
-    public static void main(String[] args) {
-        try {
-            LogistikRoboter lieferant = new LogistikRoboter();
-            lieferant.connect();
-            lieferant.start();
-        } catch (Exception e) {
-            System.err.println("Space not online!");
-            System.exit(1);
-        }
-    }
+			} catch (RemoteException re) {
+				// System.err.println("Something happend ... " +
+				// re.getMessage());
+				if (re.getMessage().contains("Connection refused")) {
+					System.err.println("Registry said goodbye ...");
+					System.exit(1);
+				}
+				// else System.err.println("Keine Autos !!!");
+			}
+		}
+	}
+
+	public static void main(String[] args) {
+		try {
+			LogistikRoboter lieferant = new LogistikRoboter();
+			callFactory = Fabrik.getInstance();
+			lieferant.start();
+		} catch (Exception e) {
+			System.err.println("Registry not online!");
+			System.exit(1);
+		}
+	}
 }
